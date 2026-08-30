@@ -87,3 +87,75 @@ class Database:
             )
             rows = cur.fetchall()
             return [self._row_to_task(r) for r in rows]  
+
+    def add_block(self, block: TimeBlock) -> int:
+        with self._connect() as conn:
+            cur = conn.execute(
+                """INSERT INTO blocks (source_date, start_time, end_time, summary_goal,
+                    pomodoro_rhythm, action_cue, task_id, status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (block.source_date, block.start_time, block.end_time, block.summary_goal,
+                    block.pomodoro_rhythm, block.action_cue, block.task_id, block.status.value),
+            )
+            return cur.lastrowid
+
+    def _row_to_block(self, row: sqlite3.Row) -> TimeBlock:
+        return TimeBlock(
+            id=row["id"],
+            source_date=row["source_date"],
+            start_time=row["start_time"],
+            end_time=row["end_time"],
+            summary_goal=row["summary_goal"],
+            pomodoro_rhythm=row["pomodoro_rhythm"],
+            action_cue=row["action_cue"],
+            task_id=row["task_id"],
+            status=BlockStatus(row["status"]),
+            created_at=datetime.fromisoformat(row["created_at"]),
+            notified=datetime.fromisoformat(row["notified"]) if row["notified"] else None,
+        )
+
+    def get_blocks_by_date(self, source_date: str) -> list[TimeBlock]:
+        with self._connect() as conn:
+            cur = conn.execute(
+                """SELECT * FROM blocks WHERE source_date = ?""",
+                (source_date,),
+            )
+            rows = cur.fetchall()
+            return [self._row_to_block(r) for r in rows]
+
+    def get_block(self, block_id: int) -> Optional[TimeBlock]:
+        with self._connect() as conn:
+            cur = conn.execute(
+                """SELECT * FROM blocks WHERE id = ?""",
+                (block_id,),
+            )
+            row = cur.fetchone()
+            return self._row_to_block(row) if row else None
+
+    def update_block_status(self, block_id: int, new_status: BlockStatus) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                """UPDATE blocks SET status = ? WHERE id = ?""",
+                (new_status.value, block_id),
+            )
+
+    def update_block_notified(self, block_id: int, notified_time: datetime) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                """UPDATE blocks SET notified = ? WHERE id = ?""",
+                (notified_time.isoformat(), block_id),
+            )
+
+    def mark_notified(self, block_id: int) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                """UPDATE blocks SET status = ?, notified = ? WHERE id = ?""",
+                (BlockStatus.NOTIFIED.value, datetime.now().isoformat(), block_id),
+            )
+
+    def reschedule_block(self, block_id: int, new_start_time: str, new_end_time: str) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                """UPDATE blocks SET start_time = ?, end_time = ?, status = ? WHERE id = ?""",
+                (new_start_time, new_end_time, BlockStatus.SCHEDULED.value, block_id),
+            )
