@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import sqlite3
+from datetime import datetime
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Generator, Optional
 
 from .models import BlockStatus, Task, TaskStatus, TimeBlock
 
@@ -42,10 +43,47 @@ class Database:
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_schema()
 
-    def _init_schema(self):
+    @contextmanager
+    def _connect(self) -> Generator[sqlite3.Connection]:
         conn = sqlite3.connect(self.db_path)
-        conn.executescript(SCHEMA)
-        conn.commit()
-        conn.close()
-        
-        
+        conn.row_factory = sqlite3.Row
+        try:
+            yield conn
+            conn.commit()
+        finally:
+            conn.close()
+
+    def _init_schema(self) -> None:
+        with self._connect() as conn:
+            conn.executescript(SCHEMA)
+
+    def add_task(self, task: Task) -> int:
+        with self._connect() as conn:
+            cur = conn.execute(
+                """INSERT INTO tasks (title, notes, priority, status, source_week)
+                    VALUES (?, ?, ?, ?, ?)""",
+                (task.title, task.notes, task.priority, task.status.value, task.source_week),
+            )
+            return cur.lastrowid
+
+    @staticmethod
+    def _row_to_task(row: sqlite3.Row) -> Task:
+        return Task(
+            id=row["id"],
+            title=row["title"],
+            notes=row["notes"],
+            priority=row["priority"],
+            status=TaskStatus(row["status"]),
+            source_week=row["source_week"],
+            created_at=datetime.fromisoformat(row["created_at"]),
+        )
+    
+    def get_active_tasks(self) -> list[Task]:
+        with self._connect() as conn:
+            cur = conn.execute(
+                """SELECT * FROM tasks WHERE status IN (?, ?) 
+                    order by priority asc""",
+                (TaskStatus.PENDING.value, TaskStatus.IN_PROGRESS.value),
+            )
+            rows = cur.fetchall()
+            return [self._row_to_task(r) for r in rows]  
