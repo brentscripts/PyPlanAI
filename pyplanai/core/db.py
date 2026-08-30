@@ -99,6 +99,7 @@ class Database:
             )
             return cur.lastrowid
 
+    @staticmethod
     def _row_to_block(self, row: sqlite3.Row) -> TimeBlock:
         return TimeBlock(
             id=row["id"],
