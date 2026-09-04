@@ -8,6 +8,8 @@ from typing import Generator, Optional
 
 from .models import BlockStatus, Task, TaskStatus, TimeBlock
 
+from .config import DEFAULT_DB_PATH
+
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,8 +36,6 @@ CREATE TABLE IF NOT EXISTS blocks (
     FOREIGN KEY (task_id) REFERENCES tasks(id)
 );
 """
-
-DEFAULT_DB_PATH = Path.home() / ".pyplanai" / "pyplanai.db"
 
 class Database:
     def __init__(self, db_path: Path = DEFAULT_DB_PATH):

@@ -7,6 +7,7 @@ from typing import Optional
 from .db import Database
 from .models import BlockStatus, Task, TaskStatus, TimeBlock
 from .parser import parse_week_file
+from .config import DEFAULT_DB_PATH
 
 class PyPlanCore:
     def __init__(self,db: Optional[Database] = None):
