@@ -28,8 +28,17 @@ class PyPlanCore:
                 return []
             task_dicts = [{"title": task.title, "priority": task.priority, "notes": task.notes} for task in active_tasks]
             block_dicts = self.llm.generate_blueprint(today_str, task_dicts)
+
+            title_to_task = {task.title: task for task in active_tasks}
+
             saved_blocks = []
             for block_dict in block_dicts:
+                matched_title = block_dict.get("task_title")
+                if matched_title and matched_title in title_to_task:
+                    matched_task_id=title_to_task[matched_title].id
+                else:
+                    matched_task_id=None
+
                 block = TimeBlock(
                     id=None,
                     source_date=today_str,
@@ -38,7 +47,7 @@ class PyPlanCore:
                     summary_goal=block_dict["summary_goal"],
                     pomodoro_rhythm=block_dict["pomodoro_rhythm"],
                     action_cue=block_dict["action_cue"],
-                    task_id=None,
+                    task_id=matched_task_id,
                 )
                 block.id = self.db.add_block(block)
                 saved_blocks.append(block)
