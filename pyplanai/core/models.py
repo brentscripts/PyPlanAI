@@ -8,8 +8,8 @@ from typing import Optional
 class TaskStatus(str, Enum):
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
-    Done = "done"
-    Skipped = "skipped" \
+    DONE = "done"
+    SKIPPED = "skipped"
 
 @dataclass
 class Task:

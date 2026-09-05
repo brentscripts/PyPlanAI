@@ -88,6 +88,13 @@ class Database:
             rows = cur.fetchall()
             return [self._row_to_task(r) for r in rows]  
 
+    def update_task_status(self, task_id: int, new_status: TaskStatus) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                """UPDATE tasks SET status = ? WHERE id = ?""",
+                (new_status.value, task_id),
+            )
+
     def add_block(self, block: TimeBlock) -> int:
         with self._connect() as conn:
             cur = conn.execute(
@@ -100,7 +107,7 @@ class Database:
             return cur.lastrowid
 
     @staticmethod
-    def _row_to_block(self, row: sqlite3.Row) -> TimeBlock:
+    def _row_to_block(row: sqlite3.Row) -> TimeBlock:
         return TimeBlock(
             id=row["id"],
             source_date=row["source_date"],

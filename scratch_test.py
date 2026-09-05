@@ -43,5 +43,14 @@ print("blocks created:", len(blocks))
 for b in blocks:
     print(b.id, b.task_id, b.start_time, "-", b.end_time, "|", b.summary_goal)
 
-    
-    
+print("\n--- Testing skip_block ---")
+skipped = ppc.skip_block(blocks[0].id)
+print("block status:", skipped.status)
+skipped_task = ppc.db.get_active_tasks()
+print("still-active task count:", len(skipped_task))  # should be one fewer than before, since one task got skipped
+
+print("\n--- Testing push_block_later ---")
+pushed = ppc.push_block_later(blocks[1].id, 15)
+print("original:", blocks[1].start_time, "-", blocks[1].end_time)
+print("pushed:  ", pushed.start_time, "-", pushed.end_time)
+print("pushed status:", pushed.status)

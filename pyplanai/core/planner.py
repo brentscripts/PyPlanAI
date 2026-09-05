@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
@@ -52,3 +52,25 @@ class PyPlanCore:
                 block.id = self.db.add_block(block)
                 saved_blocks.append(block)
             return saved_blocks
+
+    def skip_block(self, block_id: int) -> Optional[TimeBlock]:
+        self.db.update_block_status(block_id, BlockStatus.SKIPPED)
+        block = self.db.get_block(block_id)
+        if block and block.task_id:
+            self.db.update_task_status(block.task_id, TaskStatus.SKIPPED)
+        return block
+
+    def push_block_later(self, block_id: int, minutes: int = 30) -> Optional[TimeBlock]:
+        block = self.db.get_block(block_id)
+        if not block:
+            return None
+
+        start_time_obj = datetime.strptime(block.start_time, "%H:%M")
+        end_time_obj = datetime.strptime(block.end_time, "%H:%M")
+
+        new_start_time = (start_time_obj + timedelta(minutes=minutes)).strftime("%H:%M")
+        new_end_time = (end_time_obj + timedelta(minutes=minutes)).strftime("%H:%M")
+
+        self.db.reschedule_block(block_id, new_start_time, new_end_time)
+
+        return self.db.get_block(block_id)
