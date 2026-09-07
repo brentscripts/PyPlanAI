@@ -8,11 +8,18 @@ from .db import Database
 from .models import BlockStatus, Task, TaskStatus, TimeBlock
 from .parser import parse_week_file
 from .config import DEFAULT_DB_PATH
+from .llm import GroqPlannerClient
 
 class PyPlanCore:
     def __init__(self,db: Optional[Database] = None, llm = None):
         self.db = db or Database()
-        self.llm = llm
+        self._llm = llm
+
+    @property
+    def llm(self):
+        if self._llm is None:
+            self._llm = GroqPlannerClient()
+        return self._llm
 
     def ingest_file(self,path: str | Path) -> int:
         source_week = datetime.now().strftime("%Y-%m-%d")
