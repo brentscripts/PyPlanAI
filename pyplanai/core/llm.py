@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any
+from urllib import response
 
 from groq import Groq
 from .config import GROQ_API_KEY as DEFAULT_GROQ_API_KEY
@@ -33,7 +34,12 @@ class GroqPlannerClient:
                 {"role": "user", "content": user_payload}
             ],
             temperature=0.6,
+            max_completion_tokens=4096,
         )
+
+        print("DEBUG finish_reason:", response.choices[0].finish_reason)
+        print("DEBUG raw content:", repr(response.choices[0].message.content))
+
         raw = response.choices[0].message.content.strip()
         if raw.startswith("```json"):
             raw = raw.removeprefix("```json")

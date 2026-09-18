@@ -1,0 +1,18 @@
+
+[project]
+name = "pyplanai"
+version = "0.1.0"
+description = "An ADHD-friendly personal planning agent"
+requires-python = ">=3.10"
+dependencies = [
+    "groq",
+    "python-telegram-bot",
+    "python-dotenv",
+]
+
+[project.scripts]
+pyplanai = "pyplanai.adapters.cli:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
