@@ -37,9 +37,6 @@ class GroqPlannerClient:
             max_completion_tokens=4096,
         )
 
-        print("DEBUG finish_reason:", response.choices[0].finish_reason)
-        print("DEBUG raw content:", repr(response.choices[0].message.content))
-
         raw = response.choices[0].message.content.strip()
         if raw.startswith("```json"):
             raw = raw.removeprefix("```json")
