@@ -81,3 +81,16 @@ class PyPlanCore:
         self.db.reschedule_block(block_id, new_start_time, new_end_time)
 
         return self.db.get_block(block_id)
+
+    def get_upcoming_blocks_needing_notification(self, lookahead_minutes: int = 2) -> list[TimeBlock]:
+        now = datetime.now()
+        target = now + timedelta(minutes=lookahead_minutes)
+        today_str = now.strftime("%Y-%m-%d")
+        results = []
+        for block in self.db.get_blocks_by_date(today_str):
+            if block.status != BlockStatus.SCHEDULED:
+                continue
+            block_start = datetime.strptime(f"{block.source_date} {block.start_time}", "%Y-%m-%d %H:%M")
+            if now <= block_start <= target:
+                results.append(block)
+        return results
