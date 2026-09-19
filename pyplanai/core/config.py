@@ -5,7 +5,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 DEFAULT_DB_PATH = Path(
     os.getenv("PYPLANAI_DB_PATH", str(Path.home() / ".pyplanai" / "pyplanai.db "))
