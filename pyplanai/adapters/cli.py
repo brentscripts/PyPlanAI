@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timedelta
 
 from pyplanai.core.planner import PyPlanCore
+
 
 
 def cmd_ingest(core: PyPlanCore, args: argparse.Namespace) -> None:
@@ -13,7 +15,7 @@ def cmd_plan(core: PyPlanCore, args: argparse.Namespace) -> None:
     date_str = None
     if args.tomorrow:
         date_str = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
-    blocks = core.generate_daily_blueprint()
+    blocks = core.generate_daily_blueprint(date_str=date_str)
     if not blocks:
         print("No active tasks found, brother. Ingest a week file first")
         return

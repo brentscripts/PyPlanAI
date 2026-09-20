@@ -28,8 +28,8 @@ class PyPlanCore:
             self.db.add_task(task)
         return len(tasks)
 
-    def generate_daily_blueprint(self):
-            today_str = datetime.now().strftime("%Y-%m-%d")
+    def generate_daily_blueprint(self, date_str: Optional[str] = None) -> list[TimeBlock]:
+            today_str = date_str or datetime.now().strftime("%Y-%m-%d")
             active_tasks = self.db.get_active_tasks()
             if not active_tasks:
                 return []

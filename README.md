@@ -252,10 +252,42 @@ or sync the file over some other way. The planned web dashboard (see
 Roadmap) is the real fix for this — a browser UI reachable from any
 device, with no SSH required.
 
+## Known Issues
+
+- **No deduplication on `ingest_file`.** Re-running `ingest` against the
+  same file's content adds duplicate tasks every time. Clear the database
+  (`rm ~/.pyplanai/pyplanai.db`) before retrying a failed ingest.
+- **Tasks have no day-of-week awareness.** `get_active_tasks()` and
+  `generate_daily_blueprint` treat every `PENDING` task as a flat, dateless
+  pool — there's no way to say "this task belongs to tomorrow, not today."
+  In practice this means: if you ingest and plan for tomorrow
+  (`pyplanai plan --tomorrow`) while any of today's tasks are still
+  `PENDING`, they'll bleed into tomorrow's blueprint alongside tomorrow's
+  fresh tasks. Workaround: fully resolve today (mark each remaining task
+  `complete-task` or `skip-task` as it actually happens, or honestly
+  `skip-task` anything that won't get done) before ingesting and planning
+  for the next day. The real fix is tagging tasks with a target date and
+  filtering `get_active_tasks()`/blueprint generation by it — see Roadmap.
+  
 ## Roadmap
 
-- Local web dashboard reusing the same `PyPlanCore` API for rich visual
+- **Smarter re-planning on skip/later** — instead of blindly shifting one
+  block's time, re-call the LLM with the day's remaining tasks so the rest
+  of the schedule reflows sensibly around a skip or delay, rather than
+  risking overlapping blocks.
+- **Local web dashboard** reusing the same `PyPlanCore` API for rich visual
   planning views, and to solve remote (e.g. OrangePi) access cleanly.
+- **Natural-language commands** — text the bot freely ("push everything
+  back an hour", "lighten up today") and have the LLM interpret intent and
+  call the right `PyPlanCore` methods, instead of requiring exact
+  `/command <id>` syntax.
+- **Pattern reflection / coaching** — periodic LLM-generated insight from
+  accumulated skip/complete/reschedule history (e.g. recurring skip
+  patterns by time of day), in the spirit of the app's original
+  ADHD-executive-function-support design.
+- **Google Calendar integration** — push generated blocks as calendar
+  events, as a complementary notification channel alongside desktop and
+  Telegram (not a replacement for PyPlanAI's LLM-driven planning).
 - Docker packaging.
 - Historical stats (skip rate by day/time, streaks) using the same SQLite
   data already being collected.
@@ -275,3 +307,11 @@ device, with no SSH required.
 - [x] **adapters/notify_desktop.py** — `notify-send` wrapper. Tested.
 - [x] **adapters/telegram_bot.py** — send + `/skip`/`/later`/`/complete` command handlers. Tested live.
 - [x] **daemon.py** — scheduler loop + Telegram polling running concurrently via asyncio, deployed as a systemd user service. Tested live, end to end, against a real full day.
+- [x] **Date-targeted planning** — `pyplanai plan --tomorrow` generates
+  and stamps blocks with the next day's date, so planning the night before
+  actually works with the daemon correctly finding them the following
+  morning. Fixes the same-day-only limitation discovered during first
+  real-world use.
+
+
+
