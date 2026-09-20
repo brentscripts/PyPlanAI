@@ -10,6 +10,9 @@ def cmd_ingest(core: PyPlanCore, args: argparse.Namespace) -> None:
     print(f"Alright, alright, alright. Ingested {count} task(s) from {args.file}.")
 
 def cmd_plan(core: PyPlanCore, args: argparse.Namespace) -> None:
+    date_str = None
+    if args.tomorrow:
+        date_str = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
     blocks = core.generate_daily_blueprint()
     if not blocks:
         print("No active tasks found, brother. Ingest a week file first")
@@ -82,6 +85,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_plan.set_defaults(func=cmd_plan)
 
     p_status = subparsers.add_parser("status", help="Show status of active tasks")
+    p_plan.add_argument("--tomorrow", action="store_true", help="Generate tomorrow's blueprint instead of today's")
     p_status.set_defaults(func=cmd_status)
 
     p_skip = subparsers.add_parser("skip", help="Skip a planned block")
