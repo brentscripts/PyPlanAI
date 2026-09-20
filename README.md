@@ -204,6 +204,44 @@ systemctl --user enable --now pyplanai.service
 Check it's running: `systemctl --user status pyplanai.service`. Watch logs
 live: `journalctl --user -u pyplanai.service -f`.
 
+### Verifying and monitoring the daemon
+
+Confirm it's actually running:
+```bash
+systemctl --user status pyplanai.service
+```
+Look for `Active: active (running)`. `enabled` in the `Loaded` line confirms
+it'll start automatically on future logins/boots.
+
+Confirm it survives logout/reboot, not just the current session (without
+this, the service can stop when you log out and won't restart until you
+log back in):
+```bash
+loginctl enable-linger $USER
+loginctl show-user $USER | grep Linger
+```
+Should show `Linger=yes`.
+
+Watch what it's doing in real time (useful for confirming a notification
+actually fired, or diagnosing an error):
+```bash
+journalctl --user -u pyplanai.service -f
+```
+`-f` follows the log live, like `tail -f`. `Ctrl+C` stops watching without
+stopping the service itself.
+
+Restart it after a code change (systemd won't pick up edits to
+`pyplanai/` automatically — the running process has the old code loaded
+in memory until restarted):
+```bash
+systemctl --user restart pyplanai.service
+```
+
+Stop it entirely:
+```bash
+systemctl --user stop pyplanai.service
+```
+
 ### Running on a separate machine (e.g. an OrangePi)
 
 SQLite is a local file, not a network service — the CLI, the task file,
