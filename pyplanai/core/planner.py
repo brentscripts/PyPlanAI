@@ -67,6 +67,13 @@ class PyPlanCore:
             self.db.update_task_status(block.task_id, TaskStatus.SKIPPED)
         return block
 
+    def complete_block(self, block_id: int) -> Optional[TimeBlock]:
+        self.db.update_block_status(block_id, BlockStatus.DONE)
+        block = self.db.get_block(block_id)
+        if block and block.task_id:
+            self.db.update_task_status(block.task_id, TaskStatus.DONE)
+        return block
+
     def push_block_later(self, block_id: int, minutes: int = 30) -> Optional[TimeBlock]:
         block = self.db.get_block(block_id)
         if not block:
@@ -81,6 +88,26 @@ class PyPlanCore:
         self.db.reschedule_block(block_id, new_start_time, new_end_time)
 
         return self.db.get_block(block_id)
+
+    def add_task(self, title: str, priority: int = 3, notes: str = "") -> int:
+        task = Task(
+            id=None,
+            title=title,
+            priority=priority,
+            notes=notes,
+            source_week=datetime.now().strftime("%Y-%m-%d"),
+        )
+        return self.db.add_task(task)
+
+    def complete_task(self, task_id: int) -> None:
+        self.db.update_task_status(task_id, TaskStatus.DONE)
+
+    def skip_task(self, task_id: int) -> None:
+        self.db.update_task_status(task_id, TaskStatus.SKIPPED)
+
+    def get_today_blocks(self) -> list[TimeBlock]:
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        return self.db.get_blocks_by_date(today_str)
 
     def get_upcoming_blocks_needing_notification(self, lookahead_minutes: int = 2) -> list[TimeBlock]:
         now = datetime.now()

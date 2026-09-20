@@ -49,7 +49,20 @@ def build_command_bot(core: PyPlanCore, token: str) -> Application:
         else:
             await update.message.reply_text("Couldn't find that block, brother.")
 
+    async def complete(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        if not context.args:
+            await update.message.reply_text("Usage: /complete <block_id>")
+            return
+        block = core.complete_block(int(context.args[0]))
+        if block:
+            await update.message.reply_text(
+                f"Green lights, brother! Block #{block.id} — done. Keep that momentum rolling."
+            )
+        else:
+            await update.message.reply_text("Couldn't find that block, brother.")
+
     app = Application.builder().token(token).build()
     app.add_handler(CommandHandler("skip", skip))
     app.add_handler(CommandHandler("later", later))
+    app.add_handler(CommandHandler("complete", complete))
     return app
