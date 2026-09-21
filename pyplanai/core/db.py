@@ -167,3 +167,7 @@ class Database:
                 """UPDATE blocks SET start_time = ?, end_time = ?, status = ? WHERE id = ?""",
                 (new_start_time, new_end_time, BlockStatus.SCHEDULED.value, block_id),
             )
+
+    def clear_blocks_for_date(self, source_date: str) -> None:
+        with self._connect() as conn:
+            conn.execute("DELETE FROM blocks WHERE source_date = ?", (source_date,))

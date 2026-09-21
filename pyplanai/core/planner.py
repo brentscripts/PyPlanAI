@@ -36,6 +36,8 @@ class PyPlanCore:
             task_dicts = [{"title": task.title, "priority": task.priority, "notes": task.notes} for task in active_tasks]
             block_dicts = self.llm.generate_blueprint(today_str, task_dicts)
 
+            self.db.clear_blocks_for_date(today_str)  # Clear existing blocks for the date before adding new ones
+
             title_to_task = {task.title: task for task in active_tasks}
 
             saved_blocks = []
