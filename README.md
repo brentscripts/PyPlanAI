@@ -275,7 +275,7 @@ device, with no SSH required.
   `skip-task` anything that won't get done) before ingesting and planning
   for the next day. The real fix is tagging tasks with a target date and
   filtering `get_active_tasks()`/blueprint generation by it — see Roadmap.
-  
+
 ## Roadmap
 
 - **Smarter re-planning on skip/later** — instead of blindly shifting one
@@ -319,6 +319,12 @@ device, with no SSH required.
   actually works with the daemon correctly finding them the following
   morning. Fixes the same-day-only limitation discovered during first
   real-world use.
+- [x] **Stale block cleanup** — `generate_daily_blueprint` previously had no
+  way to clear old blocks before inserting new ones, so re-running `plan`
+  on the same date (including via `--tomorrow`, once that date became
+  "today") silently accumulated duplicate/stale blocks alongside fresh
+  ones. Fixed with `Database.clear_blocks_for_date`, called at the start
+  of blueprint generation. Discovered and fixed during real daily use.
 
 
 
