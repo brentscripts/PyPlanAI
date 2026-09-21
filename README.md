@@ -6,6 +6,15 @@ Blocks, then pings you 2 minutes before each one via desktop notification
 and Telegram — with zero-guilt `/skip`, `/later`, and `/complete` escape
 hatches.
 
+## 🏛️ Project Status & Intent
+
+This codebase is a personal project. To preserve the integrity of this work as an individual evaluation piece:
+
+* External issues and pull requests are disabled/ignored.
+* The code is public for **viewing and review purposes only**. 
+
+Please refer to the `LICENSE` file regarding permissions and restrictions on reuse.
+
 ## Architecture
 
 Decoupled core + thin adapters, so every frontend shares one brain — no
